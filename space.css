@@ -1,0 +1,115 @@
+/* space.css - starfield + cards styling (toggle button persists) */
+
+:root{
+    --card-width: 300px;
+    --card-height: 360px;
+}
+
+/* body / containers */
+body {
+    overflow: hidden;
+    background-color: #000 !important;
+    font-family: 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+#main-content, #starfield-container {
+    will-change: transform;
+    transition: transform 0.1s ease-out;
+}
+
+.max-width-80vw { max-width: 80vw !important; }
+
+#starfield-container {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-color: #000;
+    transform: scale(1.1);
+}
+
+/* stars */
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    opacity: 0;
+    animation:
+        star-fade-in 0.3s ease-out forwards,
+        star-twinkle 5s infinite alternate ease-in-out,
+        star-move 10s infinite alternate ease-in-out;
+    animation-delay: var(--star-delay), calc(var(--star-delay) + 300ms), var(--star-delay);
+}
+@keyframes star-fade-in { 0% { opacity:0 } 100% { opacity: var(--star-opacity) } }
+@keyframes star-twinkle {
+    0%,100% { transform: scale(1); opacity: var(--star-opacity); }
+    50%   { transform: scale(1.5); opacity: calc(var(--star-opacity) + 0.25); }
+}
+@keyframes star-move { 0%{ transform: translate(0,0);} 100%{ transform: translate(var(--star-dx), var(--star-dy)); } }
+
+/* text fades */
+.header-fade-out { opacity: 0 !important; transition: opacity 1s ease-out; }
+#cards-container.content-fade-out { opacity: 0 !important; transition: opacity 1s ease-out; }
+
+@keyframes fade-in-bottom {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+.fade-in-bottom-animation { animation-name: fade-in-bottom; animation-duration: 1s; animation-fill-mode: forwards; }
+
+/* Audio toggle button: fixed and always visible; style indicates state via aria-pressed and text updated by JS */
+#audio-toggle {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 3000;
+    display: inline-block;
+    opacity: 0.95;
+    backdrop-filter: blur(4px);
+}
+
+/* Card layout */
+.card-container-wrapper { width: var(--card-width); height: var(--card-height); perspective: 1000px; transition: opacity 0.5s; }
+.card-link-wrapper { text-decoration: none; color: inherit; display: block; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.35s; cursor: pointer; }
+.card-flip { width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.9s, opacity 0.9s, background-color 0.3s, box-shadow 0.3s; transform: rotateY(-90deg); opacity: 0; background: linear-gradient(180deg,#151515,#1f1f1f); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.04); }
+.card-flip.flipped { transform: rotateY(0deg); opacity: 1; }
+.card-link-wrapper.unflipped .card-flip { transform: rotateY(-90deg); opacity: 0; }
+.card-link-wrapper:hover .card-flip { transform: scale(1.05) rotateY(0deg); box-shadow: 0 8px 30px rgba(0,0,0,0.6); }
+
+/* make title bigger */
+.card-flip .card-body { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; padding: 18px; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.card-title { font-size: 1.35rem; font-weight: 800; color: #fff; text-align:center; margin: 0; line-height:1.05; }
+
+/* image half size */
+.card-flip .card-body img {
+    width: 50%;
+    max-width: 150px;
+    height: auto;
+    object-fit: contain;
+    display:block;
+    margin: 6px auto;
+    border-radius: 6px;
+}
+
+/* badge under image + open/close color */
+.status-badge {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    color: #fff;
+    display:inline-block;
+}
+.status-open { background-color: #2ecc71; color: #062b11; } /* green */
+.status-close { background-color: #dc3545; color: #2a0b07; } /* red */
+
+/* description */
+.card-text { text-align:center; color:#cfcfcf; margin-top: 6px; font-size: 0.95rem; }
+
+/* responsive */
+@media (max-width: 576px) {
+    :root { --card-width: 92%; --card-height: auto; }
+    .card-container-wrapper { width: 92%; height: auto; }
+    .card-flip { height: auto; }
+}
