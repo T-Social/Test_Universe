@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="th" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Idle Dungeon By Teerawat TJJ</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="idlegame.css">
+  <style>
+    /* เพิ่ม style สำหรับความสูงของ Console */
+    #consoleBox {
+      height: 60vh; /* ตั้งค่าความสูง */
+      overflow-y: auto;
+      background-color: var(--card-bg); /* หรือสีพื้นหลังที่เหมาะสม */
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      border: 1px solid var(--card-border);
+    }
+    .char-card {
+      padding: 10px;
+      border: 1px solid var(--card-border);
+      border-radius: 5px;
+      transition: all 0.2s;
+    }
+    .char-card:hover {
+      background-color: rgba(var(--accent-rgb), 0.1);
+    }
+    .char-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 5px rgba(var(--accent-rgb), 0.5);
+      background-color: rgba(var(--accent-rgb), 0.15);
+    }
+    .equip-slot {
+      padding: 8px;
+      border: 1px solid var(--card-border);
+      border-radius: 5px;
+      background-color: rgba(0,0,0,0.05);
+    }
+    .equip-slot .btn-link {
+      font-size: 0.75rem;
+    }
+    /* Style สำหรับ Modal ที่มี Scroll */
+    .modal-scroll-area {
+      max-height: 40vh; 
+      overflow-y: auto; 
+      padding-right: 15px; /* เผื่อที่สำหรับ scrollbar */
+    }
+  </style>
+</head>
+<body>
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-3">
+    <h1 class="h4 me-3 mb-0 strong">✨ Idle RPG</h1>
+    <a href="../../index.html" class="btn btn-outline-light btn-sm">Back To Hub</a>
+    <div class="ms-auto d-flex align-items-center">
+      <div class="small-muted me-3">Manual Save • Responsive • Local-only</div>
+      <button id="themeToggleBtn" class="btn btn-outline-light btn-sm" style="width: 40px;">
+        <i class="bi bi-moon-stars"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-lg-3">
+      <div class="card p-3">
+        <div class="d-flex align-items-center mb-2">
+          <div class="me-2">
+            <div class="rounded-circle bg-white" style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;font-size: 24px;">👤</div>
+          </div>
+          <div>
+            <div id="playerName" class="h6 mb-0 strong">นักผจญภัย</div>
+            <div class="small-muted">Rank <span id="playerRank">Novice</span></div>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <div class="d-flex justify-content-between small-muted"><div><i class="bi bi-star-fill text-warning"></i> Level <span id="playerLevel">1</span></div><div>EXP <span id="playerExp">0</span>/<span id="playerExpMax">10</span></div></div>
+          <div class="progress mb-1"><div id="expBar" class="progress-bar bg-info" role="progressbar" style="width:20%"></div></div>
+          <div class="d-flex justify-content-between small-muted"><div><i class="bi bi-heart-fill text-danger"></i> HP <span id="playerHP">100</span>/<span id="playerHPMax">100</span></div><div><i class="bi bi-coin text-warning"></i> Gold <span id="playerGold">0</span></div></div>
+        </div>
+
+        <div class="mb-2 small-muted">📊 Stats</div>
+        <div class="row gy-2">
+          <div class="col-6 small-muted">ATK <strong id="playerATK" class="strong"><i class="bi bi-lightning-fill"></i> 5</strong></div>
+          <div class="col-6 small-muted">DEF <strong id="playerDEF" class="strong"><i class="bi bi-shield-fill"></i> 2</strong></div>
+          <div class="col-6 small-muted">Idle DPS <strong id="idleDPS" class="strong"><i class="bi bi-clock-fill"></i> 1</strong></div>
+          <div class="col-6 small-muted">Crit <strong id="critChance" class="strong"><i class="bi bi-bullseye"></i> 5%</strong></div>
+        </div>
+
+        <hr class="my-3"/>
+        <div class="small-muted mb-2">⚔️ Equipment</div>
+        <div class="d-flex gap-2 flex-column">
+          <div class="equip-slot" id="weaponSlot"> 
+            <div class="text-center">
+              <div class="equip-name fw-bold"><i class="bi bi-sword"></i> <span id="weaponName">Rusty Sword</span></div>
+              <div class="small-muted" id="weaponStat">Atk +3</div>
+              <button id="unequipWeaponBtn" class="btn btn-link btn-sm p-0 small-muted mt-1"><i class="bi bi-box-arrow-left"></i> ถอด</button>
+            </div>
+          </div>
+          <div class="equip-slot" id="armorSlot"> 
+            <div class="text-center">
+              <div class="equip-name fw-bold"><i class="bi bi-person-fill-badge"></i> <span id="armorName">Cloth Armor</span></div>
+              <div class="small-muted" id="armorStat">Def +1</div>
+              <button id="unequipArmorBtn" class="btn btn-link btn-sm p-0 small-muted mt-1"><i class="bi bi-box-arrow-left"></i> ถอด</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="healButtonsContainer" class="mt-3 d-grid gap-2">
+          <button id="heal10Btn" class="btn btn-sm btn-outline-success" onclick="buyHeal(0.1)">Heal 10% (<span id="heal10Cost">0</span> G)</button>
+          <button id="heal25Btn" class="btn btn-sm btn-outline-success" onclick="buyHeal(0.25)">Heal 25% (<span id="heal25Cost">0</span> G)</button>
+          <button id="heal50Btn" class="btn btn-sm btn-outline-success" onclick="buyHeal(0.5)">Heal 50% (<span id="heal50Cost">0</span> G)</button>
+          <button id="heal100Btn" class="btn btn-sm btn-outline-success" onclick="buyHeal(1.0)">Heal 100% (<span id="heal100Cost">0</span> G)</button>
+        </div>
+
+        <hr class="my-3"/> 
+        <div class="small-muted mb-2">💊 Auto Heal Settings</div> 
+
+        <div class="input-group input-group-sm mb-2">
+            <span class="input-group-text small-muted">Heal Level</span>
+            <select class="form-select small-muted" id="autoHealLevelSelect">
+                <option value="0">0: Not Heal</option>
+                <option value="1">1: Potion (HP +25)</option>
+                <option value="2">2: Greater Potion (HP +100)</option>
+                <option value="3">3: Superior Potion (HP +300)</option>
+                <option value="4">4: Epic Potion (HP +800)</option>
+            </select>
+        </div>
+
+        <div class="input-group input-group-sm">
+            <span class="input-group-text small-muted">Heal When HP <</span>
+            <select class="form-select small-muted" id="autoHealThresholdSelect">
+                <option value="25">25%</option>
+                <option value="50">50%</option>
+                <option value="75">75%</option>
+            </select>
+            <span class="input-group-text small-muted">%</span>
+        </div>
+
+        <div class="mt-3 d-grid gap-2">
+          <button id="collectIdleBtn" class="btn btn-sm btn-primary"><i class="bi bi-cash-stack"></i> Collect Idle (<span id="idleGoldAccum">0</span> G)</button>
+          <button id="upgradeWeaponBtn" class="btn btn-sm btn-outline-info"><i class="bi bi-arrow-up-circle"></i> Upgrade Weapon</button>
+          <button id="upgradeArmorBtn" class="btn btn-sm btn-outline-info"><i class="bi bi-arrow-up-circle"></i> Upgrade Armor</button>
+          <button id="rankUpBtn" class="btn btn-sm btn-danger mt-1"><i class="bi bi-award-fill"></i> Rank Up</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card p-3">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div>
+            <div class="h6 mb-0 strong">🗺️ Adventure</div>
+            <div class="small-muted">Auto-fight, dungeons, and loot</div>
+          </div>
+          <div>
+            <button id="dungeonBtn" class="btn btn-sm btn-info">Select Dungeon</button>
+            <button id="resetDungeonBtn" class="btn btn-warning btn-sm"><i class="bi bi-arrow-clockwise"></i> Reset Current Dungeon</button>
+          </div>
+        </div>
+
+        <div id="battleBox" class="mb-3">
+          <div class="d-flex justify-content-between small-muted">
+            <div><i class="bi bi-incognito"></i> <span id="enemyName">Enemy</span></div>
+            <div>HP: <span id="enemyHP">0</span> | ATK: <span id="enemyATK">0</span></div>
+          </div>
+          <div class="progress mb-2"><div id="enemyBar" class="progress-bar bg-danger" style="width:0%"></div></div>
+          
+          <div class="d-flex gap-2 mb-2">
+            <button id="startAutoBtn" class="btn btn-sm btn-light w-50"><i class="bi bi-play-fill"></i> Start Auto</button>
+            <button id="manualAttackBtn" class="btn btn-sm btn-outline-light w-50"><i class="bi bi-hand-index-thumb"></i> Attack</button>
+            <button id="pauseGameBtn" class="btn btn-secondary w-100"><i class="bi bi-pause-fill"></i> Pause</button>
+          </div>
+
+          <div id="battleLog" class="small-muted" style="height: 160px; overflow-y: auto;"></div>
+        </div>
+
+        <hr/>
+        <div class="d-flex justify-content-between small-muted mb-2"><div>Passive Gold : <strong id="goldPerSec" class="strong">0</strong></div><div>Destroy Dungeon : <strong id="dungeonProgressText" class="strong">0</strong></div></div>
+        <div class="progress"><div id="dungeonProgressBar" class="progress-bar" style="width:0%"></div></div>
+
+      </div>
+
+      <div class="card p-3 mt-3">
+        <div class="h6 mb-0 strong mb-2">🧪 Potions<span id="potionLimitText" class="small-muted">(0/5)</span></div>
+        <input type="text" id="potionSearch" class="form-control form-control-sm mb-2" placeholder="🔍 Search Potion...">
+        <div class="row g-2" id="potionRow">
+        </div>
+      </div>
+
+      <div class="card p-3 mt-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="h6 mb-0 strong">📦 Inventory <span id="inventoryCount" class="small-muted">(0/50)</span></div>
+          <div class="small-muted"><i class="bi bi-coin text-warning"></i> Gold: <span id="invGold">0</span></div>
+        </div>
+        
+        <div class="d-flex gap-2 mb-2">
+          <input type="text" id="inventorySearch" class="form-control form-control-sm" placeholder="🔍 Search Inventory...">
+          <select id="inventoryTypeSelect" class="form-select form-select-sm" style="width:140px;">
+            <option value="all">All</option>
+            <option value="weapon">Weapon</option>
+            <option value="armor">Armor</option>
+            <option value="misc">Misc</option>
+          </select>
+        </div>
+        <div class="d-flex gap-2 mb-2 justify-content-between">
+          <div class="d-flex gap-2">
+            <button id="equipBestBtn" class="btn btn-sm btn-outline-primary" title="Equip best weapon & armor"><i class="bi bi-emoji-sunglasses"></i> Equip Best</button>
+            <button id="sellAllBtn" class="btn btn-sm btn-outline-danger" title="Sell all inventory"><i class="bi bi-trash"></i> Sell All</button>
+          </div>
+          <select id="autoSellRaritySelect" class="form-select form-select-sm" style="min-width: 140px;">
+            <option value="off">🚫 Auto Sell Off</option>
+            <option value="common">Common & Worse</option>
+            <option value="uncommon">Uncommon & Worse</option>
+            <option value="rare">Rare & Worse</option>
+            <option value="epic">Epic & Worse</option>
+            <option value="legendary">Legendary & Worse</option>
+            <option value="all">All</option>
+          </select>
+          </div>
+
+        <div class="row g-2" id="inventoryRow">
+        </div>
+      </div>
+      
+      <div class="card p-3 mt-3">
+        <div class="h6 mb-2 strong">🦸 Characters</div>
+        
+        <input type="text" id="characterSearch" class="form-control form-control-sm mb-2" placeholder="🔍 Search Characters...">
+        
+        <div class="row g-2" id="characterRow">
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-3">
+      <div class="card p-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="small-muted">💬 Console</div>
+            <div class="btn-group btn-group-sm">
+              <button id="toggleConsoleBtn" class="btn btn-outline-secondary" title="Enable/Disable Console"><i class="bi bi-toggle-on"></i></button>
+              <button id="clearConsoleBtn" class="btn btn-outline-danger" title="Clear Console"><i class="bi bi-x-circle"></i></button>
+            </div>
+          </div>
+        <div id="consoleBox"></div>
+
+
+        <hr/>
+        <div class="d-grid gap-2 mb-3">
+          <button id="marketBtn" class="btn btn-sm btn-info"><i class="bi bi-shop"></i> Market</button>
+          <button onclick="showGiftCodePopup()" class="btn btn-sm btn-info"><i class="bi bi-gift-fill"></i> Gift Code</button>
+          <div class="d-grid mb-2"></div>
+          <button id="howToPlayBtn" class="btn btn-sm btn-secondary"><i class="bi bi-question-circle"></i> How To Play</button>
+        </div>
+        
+        <div class="d-grid gap-2">
+          <input type="file" id="uploadSaveInput" accept=".js" style="display:none;" />
+          <button id="saveBtn" class="btn btn-sm btn-outline-success"><i class="bi bi-download"></i> Save Game</button>
+          <button id="uploadSaveBtn" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Upload Save</button>
+          <button id="resetBtn" class="btn btn-sm btn-danger mt-2"><i class="bi bi-trash"></i> Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="text-center small-muted mt-3">ลิขสิทธิ์ของ Teerawat TJJ วันที่ 25/10/25</footer>
+</div>
+
+<div class="modal fade" id="popupModal" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 60vw; min-width: 500px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="popupModalLabel">Notification</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="popupModalBody">
+        ...
+      </div>
+      <div class="modal-footer" id="popupModalFooter">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="popupCancelBtn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="popupConfirmBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<script>
+/*
+  Loader & protection:
+  - เปลี่ยน AES_KEY_PARTS ให้เป็น base64 ของ key ของคุณก่อน deploy
+  - เตรียมไฟล์ .enc (ตัวอย่าง: idlegame.js.enc) ไว้ที่ตำแหน่งเดียวกับไฟล์ HTML
+*/
+(function(){
+  "use strict";
+  // --- CONFIG: เปลี่ยนค่าเหล่านี้ก่อนเอาขึ้นโปรดักชัน ---
+  var MODULES=[
+    {n:'idlegame_character',js:'idlegame_character.js',enc:'idlegame_character.js.enc'},
+    {n:'idlegame_items',js:'idlegame_items.js',enc:'idlegame_items.js.enc'},
+    {n:'idlegame_dungeon',js:'idlegame_dungeon.js',enc:'idlegame_dungeon.js.enc'},
+    {n:'idlegame_giftcode',js:'idlegame_giftcode.js',enc:'idlegame_giftcode.js.enc'},
+    {n:'idlegame_market',js:'idlegame_market.js',enc:'idlegame_market.js.enc'},
+    {n:'idlegame',js:'idlegame.js',enc:'idlegame.js.enc'}
+  ];
+  // AES key แยกเป็นชิ้น base64 (แก้เป็นของคุณ)
+  var AES_KEY_PARTS=['cmVwbGFjZV93aXRoX2E=','bm90aGVyX3BhcnQxMjM='];
+
+  // ----- internal helpers -----
+  function _getKey(){ try { return atob(AES_KEY_PARTS[0]) + atob(AES_KEY_PARTS[1]); } catch(e){ return 'default_key'; } }
+  // _log = no-op (เงียบ)
+  function _log(){ /* silent: intentionally left blank */ }
+  function _injectText(jsText){
+    var b=new Blob([jsText],{type:'application/javascript'}),u=URL.createObjectURL(b),s=document.createElement('script');
+    s.src=u; s.async=false; s.defer=false; document.head.appendChild(s);
+    setTimeout(function(){ try{ URL.revokeObjectURL(u);}catch(e){} },60*1000);
+  }
+  function _injectTag(src){
+    var s=document.createElement('script'); s.src=src; s.async=false; s.defer=false; document.head.appendChild(s);
+  }
+  function _decryptAES(ct,key){
+    try{
+      var bytes=CryptoJS.AES.decrypt(ct,key);
+      var txt=bytes.toString(CryptoJS.enc.Utf8);
+      return txt||null;
+    }catch(e){ return null; }
+  }
+  async function _tryLoadEnc(m){
+    try{
+      _log('fetch '+m.enc);
+      var r=await fetch(m.enc,{cache:'no-store'});
+      if(!r.ok){ _log('no enc '+m.enc); return false; }
+      var ct=await r.text();
+      var key=_getKey();
+      var js=_decryptAES(ct,key);
+      if(!js){ _log('dec fail '+m.n); return false; }
+      _injectText(js);
+      _log('loaded enc '+m.n);
+      return true;
+    }catch(e){
+      _log('enc load err '+m.n);
+      return false;
+    }
+  }
+  (async function(){
+    for(var i=0;i<MODULES.length;i++){
+      var ok=await _tryLoadEnc(MODULES[i]);
+      if(!ok){
+        // fallback to plain js only for dev; still injected but you should deploy .enc
+        _injectTag(MODULES[i].js);
+      }
+    }
+    _log('loader done');
+  })();
+
+  // UX protections: block right-click & dev keys (capture phase)
+  (function(){
+    // silence showConsole completely so nothing writes into #consoleBox unless other modules explicitly update it themselves
+    window.showConsole = function(){ /* intentionally silent */ };
+
+    // Block right-click
+    document.addEventListener('contextmenu', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      // no visible message
+    }, true);
+
+    // Key-blocking helper: returns true if event should be blocked
+    function shouldBlockKey(e){
+      var key = e.key || '';
+      var code = e.keyCode || 0;
+      var ctrl = !!e.ctrlKey;
+      var shift = !!e.shiftKey;
+      var alt = !!e.altKey;
+
+      // Block F12
+      if(code === 123) return true;
+
+      // Block Ctrl+U (view-source), Ctrl+S (save), Ctrl+Shift+I (devtools), Ctrl+Shift+C, Ctrl+Shift+J, Ctrl+Shift+K
+      if(ctrl && !alt && !shift && (key === 'u' || key === 'U' || code === 85)) return true;
+      if(ctrl && !alt && !shift && (key === 's' || key === 'S' || code === 83)) return true;
+      if(ctrl && shift && (key === 'I' || key === 'i' || code === 73)) return true;
+      if(ctrl && shift && (key === 'C' || key === 'c' || code === 67)) return true;
+      if(ctrl && shift && (key === 'J' || key === 'j' || code === 74)) return true;
+      if(ctrl && shift && (key === 'K' || key === 'k' || code === 75)) return true;
+
+      // Block common developer combos that might inspect element
+      // Ctrl+Shift+Key (generic)
+      if(ctrl && shift) return true;
+
+      return false;
+    }
+
+    // Attach capturing handler to block before browser default
+    document.addEventListener('keydown', function(e){
+      try{
+        if(shouldBlockKey(e)){
+          e.preventDefault();
+          e.stopPropagation();
+          // silent — no UI message
+          return false;
+        }
+      }catch(err){}
+    }, true);
+
+    // Also block keyup for extra safety
+    document.addEventListener('keyup', function(e){
+      try{
+        if(shouldBlockKey(e)){
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+      }catch(err){}
+    }, true);
+
+    // Prevent certain mouse/touch actions that may reveal UI (optional minimal)
+    document.addEventListener('mousedown', function(e){
+      // suppress three-finger/context variations — remain silent
+      if(e.button === 2){ e.preventDefault(); e.stopPropagation(); return false; }
+    }, true);
+
+    // A lightweight interval check to avoid writing any "dev detected" notifications: do nothing (silent)
+    setInterval(function(){ /* intentionally empty: detection not reported */ }, 3000);
+
+  })();
+
+  // Save protection API (AES + checksum) — internal, silent via _log (which is no-op)
+  (function(){
+    var STORAGE_KEY='idleRPG_save_v1';
+    var PARTS=AES_KEY_PARTS;
+    function getKey(){ try{ return atob(PARTS[0]) + atob(PARTS[1]); } catch(e){ return 'default_key'; } }
+    function checksum(obj){ var s=JSON.stringify(obj),h=0; for(var i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; } return h; }
+    window.save = function(state){
+      try{
+        var payload={v:1,state:state,chk:checksum(state)};
+        var ct = CryptoJS.AES.encrypt(JSON.stringify(payload), getKey()).toString();
+        localStorage.setItem(STORAGE_KEY, ct);
+        _log('saved');
+      }catch(e){
+        _log('save fail');
+      }
+    };
+    window.load = function(){
+      try{
+        var ct = localStorage.getItem(STORAGE_KEY);
+        if(!ct){ _log('no save'); return null; }
+        var bytes = CryptoJS.AES.decrypt(ct, getKey());
+        var txt = bytes.toString(CryptoJS.enc.Utf8);
+        if(!txt){ _log('bad load'); return null; }
+        var payload = JSON.parse(txt);
+        if(payload.chk !== checksum(payload.state)){ _log('chk mismatch'); return null; }
+        _log('loaded');
+        return payload.state;
+      }catch(e){
+        _log('load err');
+        return null;
+      }
+    };
+    window.reset = function(){
+      localStorage.removeItem(STORAGE_KEY);
+      _log('reset');
+    };
+  })();
+
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
