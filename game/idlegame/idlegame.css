@@ -20,7 +20,7 @@
   --option-text: #fff;
 
   /* btn-close */
-  --btn-close-icon: #fff;
+  --btn-close-icon: #bababa !important;
   --btn-close-filter: invert(1);
 
   /* selection border (for select/form-select/input) */
@@ -50,6 +50,7 @@
   --option-bg: #ffffff;
   --option-text: #000000;
 
+  --btn-close-filter: #363636 !important;
   --btn-close-filter: invert(0);
 
   --selection-border: #000000;
@@ -83,6 +84,10 @@ select,
 select option {
   background-color: var(--option-bg);
   color: var(--option-text);
+}
+
+span {
+  color: var(--text-primary);
 }
 
 .input-group-text {
@@ -153,14 +158,8 @@ select option:checked {
 .btn-close {
   color: var(--btn-close-icon) !important;
   filter: var(--btn-close-filter);
-  background: transparent;
-  border: 0;
-  opacity: 1;
-}
-.btn-close:hover {
-  opacity: 0.9;
-}
 
+}
 /* -------------------------
    Cards / forms / layout
    ------------------------- */
